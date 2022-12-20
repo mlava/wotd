@@ -1,4 +1,4 @@
-Expand your vocabulary by importing a Word of the Day with it's definition to your graph.
+Expand your vocabulary by importing a Word of the Day with its definition to your graph.
 
 There are two sources - Dictionary.com and Merriam Webster. You can choose to import one or both.
 
