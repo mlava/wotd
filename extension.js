@@ -25,7 +25,7 @@ export default {
                     window.roamAlphaAPI.updateBlock(
                         { block: { uid: uid, string: "Loading...".toString(), open: true } });
                 }
-                fetchWOTD(true, true).then(async (blocks) => {
+                fetchWOTD(true, true, uid).then(async (blocks) => {
                     await window.roamAlphaAPI.updateBlock(
                         { block: { uid: uid, string: blocks[0].text.toString(), open: true } });
 
@@ -50,7 +50,7 @@ export default {
                     window.roamAlphaAPI.updateBlock(
                         { block: { uid: uid, string: "Loading...".toString(), open: true } });
                 }
-                fetchWOTD(true, false).then(async (blocks) => {
+                fetchWOTD(true, false, uid).then(async (blocks) => {
                     await window.roamAlphaAPI.updateBlock(
                         { block: { uid: uid, string: blocks[0].text.toString(), open: true } });
 
@@ -73,7 +73,7 @@ export default {
                     window.roamAlphaAPI.updateBlock(
                         { block: { uid: uid, string: "Loading...".toString(), open: true } });
                 }
-                fetchWOTD(false, true).then(async (blocks) => {
+                fetchWOTD(false, true, uid).then(async (blocks) => {
                     await window.roamAlphaAPI.updateBlock(
                         { block: { uid: uid, string: blocks[0].text.toString(), open: true } });
 
@@ -129,7 +129,7 @@ export default {
             return fetchWOTD(false, true)
         }
 
-        async function fetchWOTD(DC, MW) {
+        async function fetchWOTD(DC, MW, uid) {
             var rAPIkey, key;
             
             breakme: {
@@ -157,14 +157,29 @@ export default {
                     var output = [];
                     var string = "__";
                     var string1 = "__";
+                    var dcDate = data[1].date.split(", ");
+                    let dcDate1 = dcDate[1].split(" ");
+                    let dcDay = dcDate1[1];
+                    let dcMonth = dcDate1[0];
+                    dcMonth = getMonth(dcMonth);
+                    let dcYear = dcDate[2];
+                    let dcLink = "[Dictionary.com](https://www.dictionary.com/e/word-of-the-day/"+data[1].word+"-"+dcYear+"-"+dcMonth+"-"+dcDay+")";
+                    var mwDate = data[2].date.split(", ");
+                    let mwDate1 = mwDate[0].split(" ");
+                    let mwDay = mwDate1[1];
+                    let mwMonth = mwDate1[0];
+                    mwMonth = getMonth(mwMonth);
+                    let mwYear = mwDate[1];
+                    let mwLink = "[Merriam Webster](https://www.merriam-webster.com/word-of-the-day/"+data[2].word+"-"+mwYear+"-"+mwMonth+"-"+mwDay+")";
+                    
                     string += data[1].word;
                     string += "__\n\n";
                     string += data[1].mean;
-                    string += "\n\n[Dictionary.com](https://www.dictionary.com/e/word-of-the-day/)";
+                    string += "\n\n"+dcLink+"";
                     string1 += data[2].word;
                     string1 += "__\n\n";
                     string1 += data[2].mean;
-                    string1 += "\n\n[Merriam Webster](https://www.merriam-webster.com/word-of-the-day)";
+                    string1 += "\n\n"+mwLink+"";
                     if (DC && MW) { // output both dictionary.com and Merriam Webster
                         headerString = "**Words of the Day:**";
                         output.push({ "text": string, });
@@ -182,7 +197,11 @@ export default {
                         }
                     ];
                 } else {
-                    console.error(data);
+                    console.error(response);
+                    alert("The call to the WOTD API failed!");
+                    if (uid != undefined) {
+                        await window.roamAlphaAPI.deleteBlock({ "block": { "uid": uid } });
+                    }
                 }
             }
         }
@@ -209,4 +228,34 @@ function sendConfigAlert(key) {
     if (key == "API") {
         alert("Please set your RapidAPI Key in the configuration settings via the Roam Depot tab.");
     }
+}
+
+function getMonth(dcMonth) {
+    var monthNumber;
+    if (dcMonth == "January") {
+        monthNumber = "01"
+    } else if (dcMonth == "February") {
+        monthNumber = "02"
+    } else if (dcMonth == "March") {
+        monthNumber = "03"
+    } else if (dcMonth == "April") {
+        monthNumber = "04"
+    } else if (dcMonth == "May") {
+        monthNumber = "05"
+    } else if (dcMonth == "June") {
+        monthNumber = "06"
+    } else if (dcMonth == "July") {
+        monthNumber = "07"
+    } else if (dcMonth == "August") {
+        monthNumber = "08"
+    } else if (dcMonth == "September") {
+        monthNumber = "09"
+    } else if (dcMonth == "October") {
+        monthNumber = "10"
+    } else if (dcMonth == "November") {
+        monthNumber = "11"
+    } else {
+        monthNumber = "12"
+    }
+    return monthNumber;
 }
