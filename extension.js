@@ -163,14 +163,14 @@ export default {
                     let dcMonth = dcDate1[0];
                     dcMonth = getMonth(dcMonth);
                     let dcYear = dcDate[2];
-                    let dcLink = "[Dictionary.com](https://www.dictionary.com/e/word-of-the-day/"+data[1].word+"-"+dcYear+"-"+dcMonth+"-"+dcDay+")";
+                    let dcLink = "[Dictionary.com](https://www.dictionary.com/e/word-of-the-day/"+encodeURIComponent(data[1].word)+"-"+dcYear+"-"+dcMonth+"-"+dcDay+")";
                     var mwDate = data[2].date.split(", ");
                     let mwDate1 = mwDate[0].split(" ");
                     let mwDay = mwDate1[1];
                     let mwMonth = mwDate1[0];
                     mwMonth = getMonth(mwMonth);
                     let mwYear = mwDate[1];
-                    let mwLink = "[Merriam Webster](https://www.merriam-webster.com/word-of-the-day/"+data[2].word+"-"+mwYear+"-"+mwMonth+"-"+mwDay+")";
+                    let mwLink = "[Merriam Webster](https://www.merriam-webster.com/word-of-the-day/"+encodeURIComponent(data[2].word)+"-"+mwYear+"-"+mwMonth+"-"+mwDay+")";
                     
                     string += data[1].word;
                     string += "__\n\n";
