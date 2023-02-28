@@ -14,7 +14,7 @@ export default {
     onload: ({ extensionAPI }) => {
         extensionAPI.settings.panel.create(config);
 
-        window.roamAlphaAPI.ui.commandPalette.addCommand({
+        extensionAPI.ui.commandPalette.addCommand({
             label: "Words of the Day (Dictionary.com and Merriam Webster)",
             callback: () => {
                 const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
@@ -39,7 +39,7 @@ export default {
                 });
             },
         });
-        window.roamAlphaAPI.ui.commandPalette.addCommand({
+        extensionAPI.ui.commandPalette.addCommand({
             label: "Word of the Day (Dictionary.com)",
             callback: () => {
                 const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
@@ -62,7 +62,7 @@ export default {
                 });
             },
         });
-        window.roamAlphaAPI.ui.commandPalette.addCommand({
+        extensionAPI.ui.commandPalette.addCommand({
             label: "Word of the Day (Merriam Webster)",
             callback: () => {
                 const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
@@ -207,15 +207,6 @@ export default {
         }
     },
     onunload: () => {
-        window.roamAlphaAPI.ui.commandPalette.removeCommand({
-            label: 'Words of the Day (Dictionary.com and Merriam Webster)'
-        });
-        window.roamAlphaAPI.ui.commandPalette.removeCommand({
-            label: 'Word of the Day (Dictionary.com)'
-        });
-        window.roamAlphaAPI.ui.commandPalette.removeCommand({
-            label: 'Word of the Day (Merriam Webster)'
-        });
         if (window.roamjs?.extension?.smartblocks) {
             window.roamjs.extension.smartblocks.unregisterCommand("WOTD");
             window.roamjs.extension.smartblocks.unregisterCommand("WOTDDC");
