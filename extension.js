@@ -131,7 +131,7 @@ export default {
 
         async function fetchWOTD(DC, MW, uid) {
             var rAPIkey, key;
-            
+
             breakme: {
                 if (!extensionAPI.settings.get("wotd-rAPI-key")) {
                     key = "API";
@@ -163,23 +163,34 @@ export default {
                     let dcMonth = dcDate1[0];
                     dcMonth = getMonth(dcMonth);
                     let dcYear = dcDate[2];
-                    let dcLink = "[Dictionary.com](https://www.dictionary.com/e/word-of-the-day/"+encodeURIComponent(data[1].word)+"-"+dcYear+"-"+dcMonth+"-"+dcDay+")";
+                    let dcLink = "[Dictionary.com](https://www.dictionary.com/e/word-of-the-day/" + encodeURIComponent(data[1].word) + "-" + dcYear + "-" + dcMonth + "-" + dcDay + ")";
                     var mwDate = data[2].date.split(", ");
                     let mwDate1 = mwDate[0].split(" ");
                     let mwDay = mwDate1[1];
                     let mwMonth = mwDate1[0];
                     mwMonth = getMonth(mwMonth);
                     let mwYear = mwDate[1];
-                    let mwLink = "[Merriam Webster](https://www.merriam-webster.com/word-of-the-day/"+encodeURIComponent(data[2].word)+"-"+mwYear+"-"+mwMonth+"-"+mwDay+")";
-                    
+                    let mwLink = "[Merriam Webster](https://www.merriam-webster.com/word-of-the-day/" + encodeURIComponent(data[2].word) + "-" + mwYear + "-" + mwMonth + "-" + mwDay + ")";
+
+                    if (data[2].word == "" && MW) {
+                        let response = await fetch("https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.merriam-webster.com%2Fwotd%2Ffeed%2Frss2");
+                        let data1 = await response.json();
+                        string1 += data1.items[0].title;
+                        string1 += "__\n\n";
+                        string1 += data[2].mean;
+                        mwLink = "[Merriam Webster]("+data1.items[0].link+")";
+                        string1 += "\n\n" + mwLink + "";
+                    } else {
+                        string1 += data[2].word;
+                        string1 += "__\n\n";
+                        string1 += data[2].mean;
+                        string1 += "\n\n" + mwLink + "";
+                    }
                     string += data[1].word;
                     string += "__\n\n";
                     string += data[1].mean;
-                    string += "\n\n"+dcLink+"";
-                    string1 += data[2].word;
-                    string1 += "__\n\n";
-                    string1 += data[2].mean;
-                    string1 += "\n\n"+mwLink+"";
+                    string += "\n\n" + dcLink + "";
+
                     if (DC && MW) { // output both dictionary.com and Merriam Webster
                         headerString = "**Words of the Day:**";
                         output.push({ "text": string, });
@@ -189,7 +200,7 @@ export default {
                     } else if (MW) { // output Merriam Webster
                         output.push({ "text": string1, });
                     }
-                    
+
                     return [
                         {
                             "text": headerString,
