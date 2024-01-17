@@ -1,10 +1,16 @@
 const config = {
     tabTitle: "Word of the Day",
     settings: [
-        {
+        /*{
             id: "wotd-rAPI-key",
             name: "RapidAPI Key",
             description: "Your API Key for RapidAPI from https://rapidapi.com/jayantur13/api/word-of-the-day2",
+            action: { type: "input", placeholder: "Add RapidAPI API key here" },
+        },*/
+        {
+            id: "wotd-rAPI-key-2",
+            name: "RapidAPI Key",
+            description: "Your API Key for RapidAPI from https://rapidapi.com/Edsonmark13/api/words-api5",
             action: { type: "input", placeholder: "Add RapidAPI API key here" },
         },
     ]
@@ -14,6 +20,7 @@ export default {
     onload: ({ extensionAPI }) => {
         extensionAPI.settings.panel.create(config);
 
+        /*
         extensionAPI.ui.commandPalette.addCommand({
             label: "Words of the Day (Dictionary.com and Merriam Webster)",
             callback: () => {
@@ -85,7 +92,32 @@ export default {
                 });
             },
         });
+        */
 
+        extensionAPI.ui.commandPalette.addCommand({
+            label: "Word of the Day",
+            callback: () => {
+                const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
+                if (uid == undefined) {
+                    alert("Please make sure to focus a block before importing the Word of the Day");
+                    return;
+                } else {
+                    window.roamAlphaAPI.updateBlock(
+                        { block: { uid: uid, string: "Loading...".toString(), open: true } });
+                }
+                fetchWOTD(false, false, uid, true).then(async (blocks) => {
+                    await window.roamAlphaAPI.updateBlock(
+                        { block: { uid: uid, string: blocks[0].text.toString(), open: true } });
+
+                    var thisBlock = window.roamAlphaAPI.util.generateUID();
+                    await window.roamAlphaAPI.createBlock({
+                        location: { "parent-uid": uid, order: 1 },
+                        block: { string: blocks[0].children[0].text.toString(), uid: thisBlock }
+                    });
+                });
+            },
+        });
+/*
         const args = {
             text: "WOTD",
             help: "Words of the Day (Dictionary.com and Merriam Webster)",
@@ -101,22 +133,24 @@ export default {
             help: "Word of the Day (Merriam Webster)",
             handler: (context) => fetchWOTDMWSB,
         };
+        */
+        const args = {
+            text: "WOTD",
+            help: "Word of the Day",
+            handler: (context) => fetchWOTDv2,
+        };
 
         if (window.roamjs?.extension?.smartblocks) {
             window.roamjs.extension.smartblocks.registerCommand(args);
-            window.roamjs.extension.smartblocks.registerCommand(args1);
-            window.roamjs.extension.smartblocks.registerCommand(args2);
         } else {
             document.body.addEventListener(
                 `roamjs:smartblocks:loaded`,
                 () =>
                     window.roamjs?.extension.smartblocks &&
-                    window.roamjs.extension.smartblocks.registerCommand(args) &&
-                    window.roamjs.extension.smartblocks.registerCommand(args1) &&
-                    window.roamjs.extension.smartblocks.registerCommand(args2)
+                    window.roamjs.extension.smartblocks.registerCommand(args)
             );
         }
-
+/*
         function fetchWOTDSSB() {
             return fetchWOTD(true, true)
         }
@@ -128,34 +162,58 @@ export default {
         function fetchWOTDMWSB() {
             return fetchWOTD(false, true)
         }
+*/
+        function fetchWOTDv2() {
+            return fetchWOTD(false, false, null, true)
+        }
 
-        async function fetchWOTD(DC, MW, uid) {
+        async function fetchWOTD(DC, MW, uid, v2) {
             var rAPIkey, key;
 
             breakme: {
-                if (!extensionAPI.settings.get("wotd-rAPI-key")) {
-                    key = "API";
-                    sendConfigAlert(key);
-                    break breakme;
-                } else {
-                    rAPIkey = extensionAPI.settings.get("wotd-rAPI-key");
-                }
-
                 var myHeaders = new Headers();
+                
+                if (v2) {
+                    if (!extensionAPI.settings.get("wotd-rAPI-key-2")) {
+                        key = "API";
+                        sendConfigAlert(key);
+                        break breakme;
+                    } else {
+                        rAPIkey = extensionAPI.settings.get("wotd-rAPI-key-2");
+                    }
+                    myHeaders.append("X-RapidAPI-Host", "words-api5.p.rapidapi.com");
+                } else {
+                    if (!extensionAPI.settings.get("wotd-rAPI-key")) {
+                        key = "API";
+                        sendConfigAlert(key);
+                        break breakme;
+                    } else {
+                        rAPIkey = extensionAPI.settings.get("wotd-rAPI-key");
+                    }
+                    myHeaders.append("X-RapidAPI-Host", "word-of-the-day2.p.rapidapi.com");
+                }
                 myHeaders.append("X-RapidAPI-Key", rAPIkey);
-                myHeaders.append("X-RapidAPI-Host", "word-of-the-day2.p.rapidapi.com");
 
                 var requestOptions = {
                     method: 'GET',
                     headers: myHeaders
                 };
 
-                let response = await fetch("https://word-of-the-day2.p.rapidapi.com/word/today", requestOptions);
+                var response;
+                if (v2) {
+                    response = await fetch("https://words-api5.p.rapidapi.com/api/v1/dict/word-today", requestOptions);
+                } else {
+                    response = await fetch("https://word-of-the-day2.p.rapidapi.com/word/today", requestOptions);
+                }
+                console.info(response);
                 if (response.ok) {
                     let data = await response.json();
+                    console.info(data);
+                    console.info(data.data);
                     var headerString = "**Word of the Day:**";
                     var output = [];
                     var string = "__";
+                    /*
                     var string1 = "__";
                     var dcDate = data[1].date.split(", ");
                     let dcDate1 = dcDate[1].split(" ");
@@ -200,6 +258,12 @@ export default {
                     } else if (MW) { // output Merriam Webster
                         output.push({ "text": string1, });
                     }
+                    */
+
+                    string += data.data.word;
+                    string += "__\n\n";
+                    string += data.data.meaning;
+                    output.push({ "text": string, });
 
                     return [
                         {
@@ -220,8 +284,10 @@ export default {
     onunload: () => {
         if (window.roamjs?.extension?.smartblocks) {
             window.roamjs.extension.smartblocks.unregisterCommand("WOTD");
+            /*
             window.roamjs.extension.smartblocks.unregisterCommand("WOTDDC");
             window.roamjs.extension.smartblocks.unregisterCommand("WOTDMW");
+            */
         };
     }
 }
@@ -231,7 +297,7 @@ function sendConfigAlert(key) {
         alert("Please set your RapidAPI Key in the configuration settings via the Roam Depot tab.");
     }
 }
-
+/*
 function getMonth(dcMonth) {
     var monthNumber;
     if (dcMonth == "January") {
@@ -261,3 +327,4 @@ function getMonth(dcMonth) {
     }
     return monthNumber;
 }
+*/
