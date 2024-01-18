@@ -205,11 +205,9 @@ export default {
                 } else {
                     response = await fetch("https://word-of-the-day2.p.rapidapi.com/word/today", requestOptions);
                 }
-                console.info(response);
+                
                 if (response.ok) {
-                    let data = await response.json();
-                    console.info(data);
-                    console.info(data.data);
+                    let data = await response.json();                    
                     var headerString = "**Word of the Day:**";
                     var output = [];
                     var string = "__";
@@ -262,7 +260,13 @@ export default {
 
                     string += data.data.word;
                     string += "__\n\n";
-                    string += data.data.meaning;
+
+                    // process for numbered list of meanings
+                    const regex = /((\.\s)(\d\.\s))/gm;
+                    const subst = `\n$3`;
+                    const result = data.data.meaning.replace(regex, subst);
+                    
+                    string += result;
                     output.push({ "text": string, });
 
                     return [
